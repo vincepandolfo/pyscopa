@@ -4,7 +4,8 @@ import game
 
 class ScopaAgent:
     """
-    Contiene i metodi e le informazioni dell'agente """
+    Contiene i metodi e le informazioni dell'agente 
+    """
     def __init__(self, diff = 'difficile'):
         self.mani = 0
         self.depth = 1
