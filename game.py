@@ -213,3 +213,27 @@ class GameState:
         punteggio['agent'] += self.scopeAgent
         
         return punteggio
+
+class ClientState(GameState):
+    """
+    Definisce lo stato minimale gestito dal client
+    """
+    def __init__(self, manoPlayer, terra):
+        """
+        Inizializza uno stato minimale
+        """
+        self.manoPlayer = manoPlayer
+        self.terra = terra
+
+    def aggiorna(self, manoPlayer, terra):
+        """
+        Aggiorna lo stato minimale
+        """
+        self.manoPlayer = manoPlayer
+        self.terra = terra
+
+    def getAzioniLegali(self):
+        """
+        Ritorna le azioni eseguibili dal client
+        """
+        return self.getAzioniLegali('player')
