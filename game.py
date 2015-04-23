@@ -218,19 +218,21 @@ class ClientState(GameState):
     """
     Definisce lo stato minimale gestito dal client
     """
-    def __init__(self, manoPlayer, terra):
+    def __init__(self, miniState):
         """
         Inizializza uno stato minimale
         """
-        self.manoPlayer = manoPlayer
-        self.terra = terra
+        self.manoPlayer = miniState[0]
+        self.terra = miniState[1]
+        self.carteAgent = miniState[2]
 
-    def aggiorna(self, manoPlayer, terra):
+    def aggiorna(self, miniState):
         """
         Aggiorna lo stato minimale
         """
-        self.manoPlayer = manoPlayer
-        self.terra = terra
+        self.manoPlayer = miniState[0]
+        self.terra = miniState[1]
+        self.carteAgent = miniState[2]
 
     def getAzioniLegali(self):
         """

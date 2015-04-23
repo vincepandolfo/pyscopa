@@ -1,5 +1,6 @@
 # coding=UTF-8
 
+import random
 import socket 
 import threading
 import game
@@ -19,24 +20,35 @@ class SocketManager(threading.Thread):
         """
         super(SocketManager, self).__init__()
         self.commSocket = commSocket
+        self.readBuffer = ""
+
+    def close(self):
+        """
+        Chiude la connessione
+        """
+        self.commSocket.close()
 
     def readData(self):
         """
-        Legge dati dal socket e li ritorna sotto forma di stringa
+        Legge l'ultimo messaggio in arrivo sul socket. Utilizza un buffer per gestire più messaggi.
         """
-        datiLetti = "" 
 
-        # Legge tutti i dati in arrivo
+        messaggio = ""
 
         while 1:
             data = self.commSocket.recv(2048)
-            datiLetti += data
             if not data:
                 continue
-            if data[-1] == '\n':
+
+            self.readBuffer += data
+            endMex = self.readBuffer.find("\n")
+
+            if endMex != -1:
+                messaggio = self.readBuffer[:endMex+1]
+                self.readBuffer = self.readBuffer[endMex+1:]
                 break
 
-        return datiLetti[:-1]
+        return messaggio[:-1]
 
     def sendData(self, messaggio):
         """
@@ -69,8 +81,9 @@ class SocketManager(threading.Thread):
         minimalState = self.readData().split('|')
         terra = json.loads(minimalState[0])
         manoPlayer = json.loads(minimalState[1])
+        inManoAvv = int(minimalState[2])
 
-        return minimalState, manoPlayer
+        return manoPlayer, terra, inManoAvv
 
 
 class ClientManager(SocketManager):
@@ -92,23 +105,27 @@ class ClientManager(SocketManager):
         Gestisce la partita del client
         """
 
-        turno = 0
+        turno = random.randint(0, 1)
+
+        self.sendMinimalState(self.stato)
+
+        self.sendData(str(turno))
 
         while not self.stato.isTerminal():
             if turno%2 == 0:
                 azione = self.agente.prossimaAzione(self.stato)
                 self.stato = self.stato.generaSuccessore(azione)
-                self.sendMinimalState(self.stato)
                 turno += 1
             else:
                 azione = self.receiveAction()
                 self.stato = self.stato.generaSuccessore(azione)
-                self.sendMinimalState(self.stato)
                 turno += 1
+
+            self.sendMinimalState(self.stato)
 
         self.sendPunteggio(self.stato)
 
-        commSocket.close()
+        self.close()
 
             
     def sendMinimalState(self, stato):
@@ -118,7 +135,7 @@ class ClientManager(SocketManager):
         aTerraStringa = json.dumps(stato.terra)
         inManoPlayerStringa = json.dumps(stato.manoPlayer)
 
-        daInviare = aTerraStringa + "|" + inManoPlayerStringa
+        daInviare = aTerraStringa + "|" + inManoPlayerStringa + "|" + str(len(stato.manoAgent))
 
         self.sendData(daInviare)
 
