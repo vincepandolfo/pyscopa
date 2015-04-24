@@ -116,7 +116,7 @@ class GameState:
             if not prese:
                 azione = { 'giocatore': giocatore, 'carta': carta, 'pigliata': () }
                 azioniLegali.append(azione)
-       
+
         return azioniLegali
     
     def isTerminal(self):
@@ -233,9 +233,3 @@ class ClientState(GameState):
         self.manoPlayer = miniState[0]
         self.terra = miniState[1]
         self.carteAgent = miniState[2]
-
-    def getAzioniLegali(self):
-        """
-        Ritorna le azioni eseguibili dal client
-        """
-        return self.getAzioniLegali('player')

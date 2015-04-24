@@ -63,6 +63,12 @@ class SocketManager(threading.Thread):
         datiLetti = self.readData()
 
         azione = json.loads(datiLetti)
+        azione['carta'] = tuple(azione['carta'])
+
+        for idx in range(0, len(azione['pigliata'])):
+            azione['pigliata'][idx] = tuple(azione['pigliata'][idx])
+
+        azione['pigliata'] = tuple(azione['pigliata'])
 
         return azione
 
@@ -85,6 +91,13 @@ class SocketManager(threading.Thread):
 
         return manoPlayer, terra, inManoAvv
 
+    def receivePunteggio(self):
+        """
+        Legge il punteggio dal socket
+        """
+        punteggio = json.loads(self.readData())
+
+        return punteggio
 
 class ClientManager(SocketManager):
     """
@@ -126,6 +139,8 @@ class ClientManager(SocketManager):
         self.sendPunteggio(self.stato)
 
         self.close()
+
+        print "Connessione al client chiusa"
 
             
     def sendMinimalState(self, stato):
