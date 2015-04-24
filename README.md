@@ -12,7 +12,9 @@ to launch the client
 
 ### How to play
 Click on a card to select it
+
 Left and right arrows to browse through possible actions using the selected card
+
 Return to play your card
 
 ## ToDo List
