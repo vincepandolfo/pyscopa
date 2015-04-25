@@ -1,6 +1,10 @@
 # pyscopa
 Python client-server application to play the popular card game "Scopa"
 
+## Dependencies
+* Python 2.7
+* PyGame
+
 ## Usage
 Use
 `python2 scopaServer.py`
