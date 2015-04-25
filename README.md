@@ -4,6 +4,7 @@ Python client-server application to play the popular card game "Scopa"
 ## Dependencies
 * Python 2.7
 * PyGame
+* wxPython
 
 ## Usage
 Use
