@@ -37,16 +37,16 @@ class ScopaGame():
 
         self.render()
         self.run = True
-
-        sleep(2)
+        
+        self.gameLoop()
 
     def gameLoop(self):
         """
         Definisce il loop principale del gioco
         """
         while self.run:
-            self.manageEvents()
             self.onLoop()
+            self.manageEvents()
 
         print self.connManager.receivePunteggio()
 
@@ -79,14 +79,17 @@ class ScopaGame():
 
         pygame.display.flip()
 
+    def checkTerminal(self):
+        """
+        Se lo stato è terminale, interrompe il gameLoop
+        """
+        if len(self.state.manoPlayer) == 0 and len(self.state.terra) == 0:
+            self.run = False
+
     def onLoop(self):
         """
         Legge l'azione dell'avversario durante il turno avversario, riceve le azioni effettuabili dall'utente nel suo turno. Termina se lo stato è terminale
         """
-        if len(self.state.manoPlayer) == 0 and len(self.state.terra) == 0:
-            self.run = False
-            return
-
         if self.turno % 2 == 0:
             self.state = game.ClientState(self.connManager.receiveMinimalState())
             self.turno += 1
@@ -94,6 +97,7 @@ class ScopaGame():
             self.actionIdx = 0
             self.azioniDisponibili = self.getAzioni()
             self.render()
+            self.checkTerminal()
 
     def initGraphic(self):
         """
@@ -120,6 +124,10 @@ class ScopaGame():
         """
         Gestisce gli eventi del gioco (click, uscita, ecc.)
         """
+        if len(self.state.manoPlayer) == 0 and len(self.state.terra) == 0:
+            self.run = False
+            return
+
         for event in pygame.event.get():
             if event.type == QUIT:
                 self.run = False
@@ -159,6 +167,9 @@ class ScopaGame():
         return azioni
 
     def execAction(self):
+        """
+        Esegue l'azione selezionata dall'utente
+        """
         carta = self.state.manoPlayer[self.selezionata]
         azione = {'giocatore': 'player', 'carta': carta, 'pigliata': self.azioniDisponibili[tuple(carta)][self.actionIdx]}
         self.connManager.sendAction(azione)
@@ -168,6 +179,7 @@ class ScopaGame():
         self.selezionata = -1
         self.actionIdx = 0
         self.render()
+        self.checkTerminal()
 
     def exit(self):
         """
@@ -179,4 +191,3 @@ class ScopaGame():
 
 if __name__ == "__main__":
     gioco = ScopaGame()
-    gioco.gameLoop()
