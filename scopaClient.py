@@ -21,6 +21,7 @@ class ScopaGame():
         connSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         connSocket.connect(('localhost', 53074))
         self.connManager = connect.SocketManager(connSocket)
+        self.connManager.sendData("play")
 
         self.state = game.ClientState(self.connManager.receiveMinimalState())
         self.nextAction = {}
