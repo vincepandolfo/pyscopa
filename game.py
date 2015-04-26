@@ -9,8 +9,21 @@ class GameState:
     Definisce lo stato di una partita: le carte a terra, in mano, prese e nel mazzo.
     Contiene i metodi per la gestione dello stato in corso e la creazione di nuovi stati
     """
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        """
+        Costruttore della classe
+        """
         self.semi = ("Bastoni", "Coppe", "Denari", "Spade")
+
+        if len(kwargs) == 0:
+            self.newInit()
+        else:
+            self.oldInit(kwargs)
+            
+    def newInit(self):
+        """
+        Inizializza un nuovo stato
+        """
         self.mazzo = [(seme, valore) for seme in self.semi for valore in range(1, 11)]
         self.pigliatePlayer = []
         self.pigliateAgent = []
@@ -28,7 +41,36 @@ class GameState:
             
         for x in range(0, 4):
             self.terra.append(self.mazzo.pop())
-    
+
+    def oldInit(self, kwargs):
+        self.mazzo = kwargs.get("mazzo", [])
+        for idx in range(0, len(self.mazzo)):
+            self.mazzo[idx] = tuple(self.mazzo[idx])
+
+        self.pigliatePlayer = kwargs.get("pigliatePlayer", [])
+        for idx in range(0, len(self.pigliatePlayer)):
+            self.pigliatePlayer[idx] = tuple(self.pigliatePlayer[idx])
+
+        self.pigliateAgent = kwargs.get("pigliateAgent", [])
+        for idx in range(0, len(self.pigliateAgent)):
+            self.pigliateAgent[idx] = tuple(self.pigliateAgent[idx])
+
+        self.manoPlayer = kwargs.get("manoPlayer", [])
+        for idx in range(0, len(self.manoPlayer)):
+            self.manoPlayer[idx] = tuple(self.manoPlayer[idx])
+
+        self.manoAgent = kwargs.get("manoAgent", [])
+        for idx in range(0, len(self.manoAgent)):
+            self.manoAgent[idx] = tuple(self.manoAgent[idx])
+
+        self.scopePlayer = kwargs.get("scopePlayer", 0)
+        self.scopeAgent = kwargs.get("scopeAgent", 0)
+
+        self.terra = kwargs.get("terra", []) 
+        for idx in range(0, len(self.terra)):
+            self.terra[idx] = tuple(self.terra[idx])
+
+
     def daiCarte(self):
         """
         Distribuisce le carte ai due giocatori
@@ -213,23 +255,3 @@ class GameState:
         punteggio['agent'] += self.scopeAgent
         
         return punteggio
-
-class ClientState(GameState):
-    """
-    Definisce lo stato minimale gestito dal client
-    """
-    def __init__(self, miniState):
-        """
-        Inizializza uno stato minimale
-        """
-        self.manoPlayer = miniState[0]
-        self.terra = miniState[1]
-        self.carteAgent = miniState[2]
-
-    def aggiorna(self, miniState):
-        """
-        Aggiorna lo stato minimale
-        """
-        self.manoPlayer = miniState[0]
-        self.terra = miniState[1]
-        self.carteAgent = miniState[2]

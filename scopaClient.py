@@ -36,8 +36,7 @@ class ScopaGame():
         self.connManager = connect.SocketManager(connSocket)
         self.connManager.sendData("play")
 
-        self.state = game.ClientState(self.connManager.receiveMinimalState())
-        self.nextAction = {}
+        self.stato = self.connManager.receiveState()
         self.turno = int(self.connManager.readData())
 
         pygame.init()
@@ -75,11 +74,11 @@ class ScopaGame():
         """
         Definisce il loop principale del gioco
         """
-        while self.run:
+        while not self.stato.isTerminal():
             self.onLoop()
             self.manageEvents()
 
-        self.printPunteggio(self.connManager.receivePunteggio())
+        self.printPunteggio(self.stato.punteggio())
 
         self.exit()
 
@@ -95,46 +94,38 @@ class ScopaGame():
         """
         self.scopaSurface.fill((0, 128, 0))
 
-        for idx in range(0, len(self.state.manoPlayer)):
+        for idx in range(0, len(self.stato.manoPlayer)):
             if idx == self.selezionata:
                 pygame.draw.rect(self.scopaSurface, (30, 144, 255), (self.inManoPos[idx][0]-4, self.inManoPos[idx][1]-4, 78, 128))
 
-            carta = (self.state.manoPlayer[idx][0], self.state.manoPlayer[idx][1])
+            carta = (self.stato.manoPlayer[idx][0], self.stato.manoPlayer[idx][1])
+
             self.scopaSurface.blit(self.carte[carta], self.inManoPos[idx])
 
-        for idx in range(0, len(self.state.terra)):
-            carta = (self.state.terra[idx][0], self.state.terra[idx][1])
+        for idx in range(0, len(self.stato.terra)):
+            carta = (self.stato.terra[idx][0], self.stato.terra[idx][1])
 
             if self.selezionata != -1:
-                if self.state.terra[idx] in self.azioniDisponibili[tuple(self.state.manoPlayer[self.selezionata])][self.actionIdx]:
+                if self.stato.terra[idx] in self.azioniDisponibili[self.stato.manoPlayer[self.selezionata]][self.actionIdx]:
                     pygame.draw.rect(self.scopaSurface, (30, 144, 255), (self.terraPos[0] + 75*idx - 4, self.terraPos[1] - 4, 78, 128))
                 
             self.scopaSurface.blit(self.carte[carta], (self.terraPos[0] + 75*idx, self.terraPos[1]))
 
-        for idx in range(0, self.state.carteAgent):
+        for idx in range(0, len(self.stato.manoAgent)):
             self.scopaSurface.blit(self.retro, self.avvPos[idx])
 
         pygame.display.flip()
-
-    def checkTerminal(self):
-        """
-        Se lo stato è terminale, interrompe il gameLoop
-        """
-        if len(self.state.manoPlayer) == 0 and len(self.state.terra) == 0:
-            self.run = False
-            return True
-
-        return False
 
     def onLoop(self):
         """
         Legge l'azione dell'avversario durante il turno avversario, riceve le azioni effettuabili dall'utente nel suo turno. Termina se lo stato è terminale
         """
-        if self.checkTerminal():
+        if self.stato.isTerminal():
             return
 
         if self.turno % 2 == 0:
-            self.state = game.ClientState(self.connManager.receiveMinimalState())
+            azionePC = self.connManager.receiveAction()
+            self.stato = self.stato.generaSuccessore(azionePC)
             self.turno += 1
             self.selezionata = -1
             self.actionIdx = 0
@@ -166,7 +157,7 @@ class ScopaGame():
         """
         Gestisce gli eventi del gioco (click, uscita, ecc.)
         """
-        if self.checkTerminal():
+        if self.stato.isTerminal():
             return
 
         for event in pygame.event.get():
@@ -176,7 +167,7 @@ class ScopaGame():
             if self.turno % 2 == 1:
                 if event.type == MOUSEBUTTONUP:
                     clickPos = event.pos
-                    for idx in range(0, len(self.state.manoPlayer)):
+                    for idx in range(0, len(self.stato.manoPlayer)):
                         if self.clickableRect[idx].collidepoint(clickPos):
                             self.selezionata = idx
                             self.actionIdx = 0
@@ -184,10 +175,10 @@ class ScopaGame():
 
                 if event.type == KEYDOWN:
                     if event.key == K_LEFT:
-                        self.actionIdx = (self.actionIdx-1)%len(self.azioniDisponibili[tuple(self.state.manoPlayer[self.selezionata])])
+                        self.actionIdx = (self.actionIdx-1)%len(self.azioniDisponibili[self.stato.manoPlayer[self.selezionata]])
                         self.render()
                     if event.key == K_RIGHT:
-                        self.actionIdx = (self.actionIdx+1)%len(self.azioniDisponibili[tuple(self.state.manoPlayer[self.selezionata])])
+                        self.actionIdx = (self.actionIdx+1)%len(self.azioniDisponibili[self.stato.manoPlayer[self.selezionata]])
                         self.render()
                     if event.key == K_RETURN and self.selezionata != -1:
                         self.execAction()
@@ -197,13 +188,13 @@ class ScopaGame():
         Riceve le azioni possibili dal server e le memorizza 
         nel formato utilizzato per il rendering delle azioni selezionate
         """
-        azioniLegali = self.state.getAzioniLegali('player')
+        azioniLegali = self.stato.getAzioniLegali('player')
         azioni = {}
-        for carta in self.state.manoPlayer:
-            azioni[tuple(carta)] = []
+        for carta in self.stato.manoPlayer:
+            azioni[carta] = []
 
         for azione in azioniLegali:
-            azioni[tuple(azione['carta'])].append(azione['pigliata'])
+            azioni[azione['carta']].append(azione['pigliata'])
 
         return azioni
 
@@ -211,11 +202,11 @@ class ScopaGame():
         """
         Esegue l'azione selezionata dall'utente
         """
-        carta = self.state.manoPlayer[self.selezionata]
-        azione = {'giocatore': 'player', 'carta': carta, 'pigliata': self.azioniDisponibili[tuple(carta)][self.actionIdx]}
+        carta = self.stato.manoPlayer[self.selezionata]
+        azione = {'giocatore': 'player', 'carta': carta, 'pigliata': self.azioniDisponibili[carta][self.actionIdx]}
         self.connManager.sendAction(azione)
         self.turno += 1
-        self.state.aggiorna(self.connManager.receiveMinimalState())
+        self.stato = self.stato.generaSuccessore(azione)
         self.azioniDisponibili = self.getAzioni()
         self.selezionata = -1
         self.actionIdx = 0

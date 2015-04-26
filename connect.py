@@ -2,6 +2,7 @@
 
 import socket 
 import json
+import game
 
 
 class SocketManager():
@@ -26,7 +27,6 @@ class SocketManager():
         """
         Legge l'ultimo messaggio in arrivo sul socket. Utilizza un buffer per gestire più messaggi.
         """
-
         messaggio = ""
 
         while 1:
@@ -74,40 +74,29 @@ class SocketManager():
 
         self.sendData(azioneStringa)
 
-    def receiveMinimalState(self):
+    def sendState(self, stato):
         """
-        Riceve uno stato minimale dal socket e lo ritorna come due liste
+        Invia uno stato di gioco
         """
-        minimalState = self.readData().split('|')
-        terra = json.loads(minimalState[0])
-        manoPlayer = json.loads(minimalState[1])
-        inManoAvv = int(minimalState[2])
+        statoDaInviare = ("terra|" + json.dumps(stato.terra) +
+            "|mazzo|" + json.dumps(stato.mazzo) +
+            "|manoPlayer|" + json.dumps(stato.manoPlayer) +
+            "|manoAgent|" + json.dumps(stato.manoAgent) +
+            "|pigliatePlayer|" + json.dumps(stato.pigliatePlayer) +
+            "|pigliateAgent|" + json.dumps(stato.pigliateAgent) +
+            "|scopePlayer|" + json.dumps(stato.scopePlayer) +
+            "|scopeAgent|" + json.dumps(stato.scopeAgent))
 
-        return manoPlayer, terra, inManoAvv
+        self.sendData(statoDaInviare)
 
-    def receivePunteggio(self):
+    def receiveState(self):
         """
-        Legge il punteggio dal socket
+        Riceve uno stato di gioco
         """
-        punteggio = json.loads(self.readData())
+        stato = self.readData().split("|")
+        params = {}
 
-        return punteggio
+        for idx in range(0, len(stato), 2):
+            params[stato[idx]] = json.loads(stato[idx+1])
 
-    def sendMinimalState(self, stato):
-        """
-        Invia uno stato minimale (cioè carte nella mano del giocatore, carte a terra)
-        """
-        aTerraStringa = json.dumps(stato.terra)
-        inManoPlayerStringa = json.dumps(stato.manoPlayer)
-
-        daInviare = aTerraStringa + "|" + inManoPlayerStringa + "|" + str(len(stato.manoAgent))
-
-        self.sendData(daInviare)
-
-    def sendPunteggio(self, stato):
-        """
-        Invia il punteggio della partita
-        """
-        punteggioStringa = json.dumps(stato.punteggio())
-
-        self.sendData(punteggioStringa)
+        return game.GameState(**params)

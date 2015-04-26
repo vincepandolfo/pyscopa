@@ -33,13 +33,14 @@ class ClientManager(threading.Thread):
 
         turno = random.randint(0, 1)
 
-        self.commManager.sendMinimalState(self.stato)
+        self.commManager.sendState(self.stato)
 
         self.commManager.sendData(str(turno))
 
         while not self.stato.isTerminal():
             if turno%2 == 0:
                 azione = self.agente.prossimaAzione(self.stato)
+                self.commManager.sendAction(azione)
                 self.stato = self.stato.generaSuccessore(azione)
                 turno += 1
             else:
@@ -47,9 +48,6 @@ class ClientManager(threading.Thread):
                 self.stato = self.stato.generaSuccessore(azione)
                 turno += 1
 
-            self.commManager.sendMinimalState(self.stato)
-
-        self.commManager.sendPunteggio(self.stato)
         self.clientList.Delete(self.clientList.FindString("Client " + str(self.clientId)))
 
         self.commManager.close()
