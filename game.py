@@ -43,6 +43,9 @@ class GameState:
             self.terra.append(self.mazzo.pop())
 
     def oldInit(self, kwargs):
+        """
+        Inizializza uno nuovo stato sulla base di uno stato precedente passato come parametro
+        """
         self.mazzo = kwargs.get("mazzo", [])
         for idx in range(0, len(self.mazzo)):
             self.mazzo[idx] = tuple(self.mazzo[idx])

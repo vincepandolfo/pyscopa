@@ -8,7 +8,6 @@ import socket
 import wx
 
 from pygame.locals import *
-from time import sleep
 
 
 class ScopaGame():
@@ -30,7 +29,7 @@ class ScopaGame():
         try:
             connSocket.connect((ipServer, 53074))
         except socket.error:
-            wx.MessageBox("Connessione non riuscita", "Errore")
+            wx.MessageBox("Connessione non riuscita", "Errore", wx.OK | wx.ICON_ERROR)
             self.exit()
 
         self.connManager = connect.SocketManager(connSocket)
@@ -66,7 +65,7 @@ class ScopaGame():
                 socket.inet_aton(ipServer)
                 valid = True
             except socket.error:
-                wx.MessageBox("Indirizzo IP non valido", "Errore")
+                wx.MessageBox("Indirizzo IP non valido", "Errore", wx.OK | wx.ICON_ERROR)
 
         return ipServer
 
@@ -98,12 +97,12 @@ class ScopaGame():
             if idx == self.selezionata:
                 pygame.draw.rect(self.scopaSurface, (30, 144, 255), (self.inManoPos[idx][0]-4, self.inManoPos[idx][1]-4, 78, 128))
 
-            carta = (self.stato.manoPlayer[idx][0], self.stato.manoPlayer[idx][1])
+            carta = self.stato.manoPlayer[idx]
 
             self.scopaSurface.blit(self.carte[carta], self.inManoPos[idx])
 
         for idx in range(0, len(self.stato.terra)):
-            carta = (self.stato.terra[idx][0], self.stato.terra[idx][1])
+            carta = self.stato.terra[idx]
 
             if self.selezionata != -1:
                 if self.stato.terra[idx] in self.azioniDisponibili[self.stato.manoPlayer[self.selezionata]][self.actionIdx]:
@@ -126,10 +125,12 @@ class ScopaGame():
         if self.turno % 2 == 0:
             azionePC = self.connManager.receiveAction()
             self.stato = self.stato.generaSuccessore(azionePC)
+            self.azioniDisponibili = self.getAzioni()
+
             self.turno += 1
             self.selezionata = -1
             self.actionIdx = 0
-            self.azioniDisponibili = self.getAzioni()
+
             self.render()
 
     def initGraphic(self):
@@ -203,13 +204,17 @@ class ScopaGame():
         Esegue l'azione selezionata dall'utente
         """
         carta = self.stato.manoPlayer[self.selezionata]
-        azione = {'giocatore': 'player', 'carta': carta, 'pigliata': self.azioniDisponibili[carta][self.actionIdx]}
+        pigliata = self.azioniDisponibili[carta][self.actionIdx]
+        azione = {'giocatore': 'player', 'carta': carta, 'pigliata': pigliata}
+
         self.connManager.sendAction(azione)
-        self.turno += 1
         self.stato = self.stato.generaSuccessore(azione)
+
         self.azioniDisponibili = self.getAzioni()
         self.selezionata = -1
         self.actionIdx = 0
+        self.turno += 1
+
         self.render()
 
     def exit(self):
