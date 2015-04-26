@@ -5,6 +5,7 @@ import sys
 import game
 import connect
 import socket
+import wx
 
 from pygame.locals import *
 from time import sleep
@@ -18,8 +19,20 @@ class ScopaGame():
         """
         Inizializza l'ambiente di gioco. Si collega al server, inizializza lo stato di gioco e l'interfaccia grafica
         """
+        app = wx.App()
+        app.MainLoop()
+
         connSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        connSocket.connect(('localhost', 53074))
+
+        ipServer = self.getIpServer()
+        self.connManager = None
+        
+        try:
+            connSocket.connect((ipServer, 53074))
+        except socket.error:
+            wx.MessageBox("Connessione non riuscita", "Errore")
+            self.exit()
+
         self.connManager = connect.SocketManager(connSocket)
         self.connManager.sendData("play")
 
@@ -40,6 +53,20 @@ class ScopaGame():
         self.run = True
         
         self.gameLoop()
+
+    def getIpServer(self):
+        valid = False
+        ipServer = ""
+        while not valid:
+            ipServer = wx.GetTextFromUser("Inserisci l'indirizzo IP del server", "IP server")
+
+            try:
+                socket.inet_aton(ipServer)
+                valid = True
+            except socket.error:
+                wx.MessageBox("Indirizzo IP non valido", "Errore")
+
+        return ipServer
 
     def gameLoop(self):
         """
@@ -187,7 +214,8 @@ class ScopaGame():
         Chiude l'interfaccia, la connessione e il programma
         """
         pygame.quit()
-        self.connManager.close()
+        if self.connManager:
+            self.connManager.close()
         sys.exit()
 
 if __name__ == "__main__":
