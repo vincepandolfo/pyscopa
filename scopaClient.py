@@ -24,8 +24,8 @@ class ScopaGame():
 
         connSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        ipServer = self.getIpServer()
         self.connManager = None
+        ipServer = self.getIpServer()
         
         try:
             connSocket.connect((ipServer, 53074))
@@ -42,7 +42,7 @@ class ScopaGame():
 
         pygame.init()
         pygame.display.set_caption("PyScopa 0.1")
-        self.scopaSurface = pygame.display.set_mode((600, 400))
+        self.scopaSurface = pygame.display.set_mode((600, 500))
         self.initGraphic()
 
         self.selezionata = -1
@@ -58,7 +58,10 @@ class ScopaGame():
         valid = False
         ipServer = ""
         while not valid:
-            ipServer = wx.GetTextFromUser("Inserisci l'indirizzo IP del server", "IP server")
+            ipServer = wx.GetTextFromUser("Inserisci l'indirizzo IP del server", "IP server", "127.0.0.1")
+
+            if ipServer == "":
+                self.exit()
 
             try:
                 socket.inet_aton(ipServer)
@@ -76,9 +79,15 @@ class ScopaGame():
             self.onLoop()
             self.manageEvents()
 
-        print self.connManager.receivePunteggio()
+        self.printPunteggio(self.connManager.receivePunteggio())
 
         self.exit()
+
+    def printPunteggio(self, punteggio):
+        """
+        Stampa il punteggio in un dialog
+        """
+        pass
 
     def render(self):
         """
@@ -113,11 +122,17 @@ class ScopaGame():
         """
         if len(self.state.manoPlayer) == 0 and len(self.state.terra) == 0:
             self.run = False
+            return True
+
+        return False
 
     def onLoop(self):
         """
         Legge l'azione dell'avversario durante il turno avversario, riceve le azioni effettuabili dall'utente nel suo turno. Termina se lo stato è terminale
         """
+        if self.checkTerminal():
+            return
+
         if self.turno % 2 == 0:
             self.state = game.ClientState(self.connManager.receiveMinimalState())
             self.turno += 1
@@ -125,7 +140,6 @@ class ScopaGame():
             self.actionIdx = 0
             self.azioniDisponibili = self.getAzioni()
             self.render()
-            self.checkTerminal()
 
     def initGraphic(self):
         """
@@ -142,18 +156,17 @@ class ScopaGame():
             self.carte[key].convert()
             self.carte[key] = pygame.transform.scale(self.carte[key], (70, 120))
 
-        self.inManoPos = [(170, 270), (250, 270), (330, 270)]
-        self.terraPos = (10, 140)
-        self.avvPos = [(170, 10), (250, 10), (330, 10)]
+        self.inManoPos = [(185, 370), (265, 370), (345, 370)]
+        self.terraPos = (10, 190)
+        self.avvPos = [(185, 10), (265, 10), (345, 10)]
 
-        self.clickableRect = [pygame.Rect(170, 270, 70, 120), pygame.Rect(250, 270, 70, 120), pygame.Rect(330, 270, 70, 120)]
+        self.clickableRect = [pygame.Rect(170, 370, 70, 120), pygame.Rect(250, 370, 70, 120), pygame.Rect(330, 370, 70, 120)]
 
     def manageEvents(self):
         """
         Gestisce gli eventi del gioco (click, uscita, ecc.)
         """
-        if len(self.state.manoPlayer) == 0 and len(self.state.terra) == 0:
-            self.run = False
+        if self.checkTerminal():
             return
 
         for event in pygame.event.get():
@@ -163,7 +176,7 @@ class ScopaGame():
             if self.turno % 2 == 1:
                 if event.type == MOUSEBUTTONUP:
                     clickPos = event.pos
-                    for idx in range(0, 3):
+                    for idx in range(0, len(self.state.manoPlayer)):
                         if self.clickableRect[idx].collidepoint(clickPos):
                             self.selezionata = idx
                             self.actionIdx = 0
@@ -207,7 +220,6 @@ class ScopaGame():
         self.selezionata = -1
         self.actionIdx = 0
         self.render()
-        self.checkTerminal()
 
     def exit(self):
         """
