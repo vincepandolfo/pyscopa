@@ -90,29 +90,30 @@ class GameState:
         
         if azione['giocatore'] == "agent":
             nuovoStato.manoAgent.remove(azione['carta'])
+
             if len(azione['pigliata']) == 0:
                 nuovoStato.terra.append(azione['carta'])
             else:
                 nuovoStato.pigliateAgent.append(azione['carta'])
                 nuovoStato.pigliateAgent += azione['pigliata']
            
-            if len(nuovoStato.terra) == len(azione['pigliata']):
-                nuovoStato.scopeAgent += 1
         else:
             nuovoStato.manoPlayer.remove(azione['carta'])
-
 
             if len(azione['pigliata']) == 0:
                 nuovoStato.terra.append(azione['carta'])
             else:
                 nuovoStato.pigliatePlayer.append(azione['carta'])
                 nuovoStato.pigliatePlayer += azione['pigliata']
-            
-
-            if len(nuovoStato.terra) == len(azione['pigliata']):
-                nuovoStato.scopePlayer += 1
         
         nuovoStato.terra = list(set(nuovoStato.terra) - set(azione['pigliata']))
+
+        if len(nuovoStato.terra) == 0 and not nuovoStato.isTerminal():
+            if azione['giocatore'] == "agent":
+                nuovoStato.scopeAgent += 1
+            else:
+                nuovoStato.scopePlayer += 1
+
                 
         if len(nuovoStato.manoAgent) == 0 and len(nuovoStato.manoPlayer) == 0:
             if len(nuovoStato.mazzo) == 0:
@@ -217,8 +218,10 @@ class GameState:
         
         if settebello in self.pigliateAgent:
             punteggio['sette'] = "agent"
+            punteggio['agent'] += 1
         elif settebello in self.pigliatePlayer:
             punteggio['sette'] = "player"
+            punteggio['player'] += 1
         else:
             punteggio['sette'] = "nessuno"
             

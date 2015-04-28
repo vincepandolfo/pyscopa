@@ -16,7 +16,8 @@ class ScopaGame():
     """
     def __init__(self):
         """
-        Inizializza l'ambiente di gioco. Si collega al server, inizializza lo stato di gioco e l'interfaccia grafica
+        Inizializza l'ambiente di gioco. Si collega al server,
+        inizializza lo stato di gioco e l'interfaccia grafica
         """
         app = wx.App()
         app.MainLoop()
@@ -25,7 +26,7 @@ class ScopaGame():
 
         self.connManager = None
         ipServer = self.getIpServer()
-        
+
         try:
             connSocket.connect((ipServer, 53074))
         except socket.error:
@@ -49,10 +50,13 @@ class ScopaGame():
 
         self.render()
         self.run = True
-        
+
         self.gameLoop()
 
     def getIpServer(self):
+        """
+        Prende in input l'indirizzo del server dall'utente, ne controlla la validità e lo ritorna
+        """
         valid = False
         ipServer = ""
         while not valid:
@@ -85,7 +89,7 @@ class ScopaGame():
         """
         Stampa il punteggio in un dialog
         """
-        pass
+        print punteggio
 
     def render(self):
         """
@@ -107,7 +111,7 @@ class ScopaGame():
             if self.selezionata != -1:
                 if self.stato.terra[idx] in self.azioniDisponibili[self.stato.manoPlayer[self.selezionata]][self.actionIdx]:
                     pygame.draw.rect(self.scopaSurface, (30, 144, 255), (self.terraPos[0] + 75*idx - 4, self.terraPos[1] - 4, 78, 128))
-                
+
             self.scopaSurface.blit(self.carte[carta], (self.terraPos[0] + 75*idx, self.terraPos[1]))
 
         for idx in range(0, len(self.stato.manoAgent)):
@@ -176,17 +180,17 @@ class ScopaGame():
 
                 if event.type == KEYDOWN:
                     if event.key == K_LEFT:
-                        self.actionIdx = (self.actionIdx-1)%len(self.azioniDisponibili[self.stato.manoPlayer[self.selezionata]])
+                        self.actionIdx = (self.actionIdx-1) % len(self.azioniDisponibili[self.stato.manoPlayer[self.selezionata]])
                         self.render()
                     if event.key == K_RIGHT:
-                        self.actionIdx = (self.actionIdx+1)%len(self.azioniDisponibili[self.stato.manoPlayer[self.selezionata]])
+                        self.actionIdx = (self.actionIdx+1) % len(self.azioniDisponibili[self.stato.manoPlayer[self.selezionata]])
                         self.render()
                     if event.key == K_RETURN and self.selezionata != -1:
                         self.execAction()
 
     def getAzioni(self):
         """
-        Riceve le azioni possibili dal server e le memorizza 
+        Riceve le azioni possibili dal server e le memorizza
         nel formato utilizzato per il rendering delle azioni selezionate
         """
         azioniLegali = self.stato.getAzioniLegali('player')

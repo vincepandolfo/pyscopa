@@ -30,7 +30,7 @@ class SocketManager():
         messaggio = ""
 
         while 1:
-            data = self.commSocket.recv(2048)
+            data = self.commSocket.recv(4096)
             if not data:
                 continue
 
