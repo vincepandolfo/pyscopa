@@ -3,6 +3,14 @@
 import socket 
 import json
 import game
+import time
+import select
+
+class TimeOutError(Exception):
+    """
+    Definisce l'errore da richiamare nel caso di timeout delle comunicazioni.
+    """
+    pass
 
 
 class SocketManager():
@@ -15,6 +23,7 @@ class SocketManager():
         Inizializza l'oggetto SocktManager con il socket da utilizzare per la comunicazione 
         """
         self.commSocket = commSocket
+        self.commSocket.setblocking(0)
         self.readBuffer = ""
 
     def close(self):
@@ -23,10 +32,15 @@ class SocketManager():
         """
         self.commSocket.close()
 
-    def readData(self):
+    def readData(self, timeout=10):
         """
         Legge l'ultimo messaggio in arrivo sul socket. Utilizza un buffer per gestire più messaggi.
         """
+        prontiLettura, prontiScrittura, errori = select.select([self.commSocket], [], [], timeout)
+
+        if len(prontiLettura) == 0:
+            raise TimeOutError()
+
         messaggio = ""
 
         while 1:
@@ -48,13 +62,21 @@ class SocketManager():
         """
         Invia dei dati sul socket
         """
+        prontiLettura, prontiScrittura, errori = select.select([], [self.commSocket], [], 10)
+
+        if len(prontiScrittura) == 0:
+            raise TimeOutError()
+
         self.commSocket.sendall(messaggio+'\n')
 
-    def receiveAction(self):
+    def receiveAction(self, timeout=10):
         """
         Riceve un azione la ritorna
         """
-        datiLetti = self.readData()
+        try:
+            datiLetti = self.readData(timeout)
+        except TimeOutError:
+            raise
 
         azione = json.loads(datiLetti)
         azione['carta'] = tuple(azione['carta'])
@@ -72,7 +94,10 @@ class SocketManager():
         """
         azioneStringa = json.dumps(azione)
 
-        self.sendData(azioneStringa)
+        try:
+            self.sendData(azioneStringa)
+        except TimeOutError:
+            raise
 
     def sendState(self, stato):
         """
@@ -87,13 +112,20 @@ class SocketManager():
             "|scopePlayer|" + json.dumps(stato.scopePlayer) +
             "|scopeAgent|" + json.dumps(stato.scopeAgent))
 
-        self.sendData(statoDaInviare)
+        try:
+            self.sendData(statoDaInviare)
+        except TimeOutError:
+            raise
 
     def receiveState(self):
         """
         Riceve uno stato di gioco
         """
-        stato = self.readData().split("|")
+        try:
+            stato = self.readData().split("|")
+        except TimeOutError:
+            raise
+
         params = {}
 
         for idx in range(0, len(stato), 2):

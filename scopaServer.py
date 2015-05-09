@@ -40,11 +40,20 @@ class ClientManager(threading.Thread):
         while not self.stato.isTerminal():
             if turno%2 == 0:
                 azione = self.agente.prossimaAzione(self.stato)
-                self.commManager.sendAction(azione)
+
+                try:
+                    self.commManager.sendAction(azione)
+                except connect.TimeOutError:
+                    break
+
                 self.stato = self.stato.generaSuccessore(azione)
                 turno += 1
             else:
-                azione = self.commManager.receiveAction()
+                try:
+                    azione = self.commManager.receiveAction(120)
+                except connect.TimeOutError:
+                    break 
+
                 self.stato = self.stato.generaSuccessore(azione)
                 turno += 1
 
@@ -64,6 +73,7 @@ class Server(threading.Thread):
         super(Server, self).__init__()
 
         self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.serverSocket.bind( ('', 53074) )
         self.serverSocket.listen(5)
         self.clientList = clientList
@@ -77,7 +87,11 @@ class Server(threading.Thread):
 
             clientM = ClientManager(clientSocket, self.clientId, self.clientList)
 
-            firstMessage = clientM.commManager.readData()
+            try:
+                firstMessage = clientM.commManager.readData()
+            except connect.TimeOutError:
+                clientM.commManager.close()
+                continue
 
             if firstMessage == "chiudi":
                 run = False

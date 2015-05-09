@@ -23,22 +23,24 @@ class ScopaGame():
         self.app = wx.App()
 
         connSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        connSocket.setblocking(0)
 
         self.connManager = None
         ipServer = self.getIpServer()
 
         try:
             connSocket.connect((ipServer, 53074))
-        except socket.error:
+        except socket.error as e:
             wx.MessageBox("Connessione non riuscita", "Errore", wx.OK | wx.ICON_ERROR)
             self.exit()
 
         self.connManager = connect.SocketManager(connSocket)
-        self.connManager.sendData("play")
 
-        self.stato = self.connManager.receiveState()
-        self.turno = int(self.connManager.readData())
+        try:
+            self.connManager.sendData("play")
+            self.stato = self.connManager.receiveState()
+            self.turno = int(self.connManager.readData())
+        except connect.TimeOutError:
+            self.timeOut()
 
         pygame.init()
         pygame.display.set_caption("PyScopa 0.1")
@@ -130,7 +132,11 @@ class ScopaGame():
             return
 
         if self.turno % 2 == 0:
-            azionePC = self.connManager.receiveAction()
+            try:
+                azionePC = self.connManager.receiveAction()
+            except connect.TimeOutError:
+                self.timeOut()
+
             self.stato = self.stato.generaSuccessore(azionePC)
             self.azioniDisponibili = self.getAzioni()
 
@@ -214,7 +220,11 @@ class ScopaGame():
         pigliata = self.azioniDisponibili[carta][self.actionIdx]
         azione = {'giocatore': 'player', 'carta': carta, 'pigliata': pigliata}
 
-        self.connManager.sendAction(azione)
+        try:
+            self.connManager.sendAction(azione)
+        except connect.TimeOutError:
+            self.timeOut()
+
         self.stato = self.stato.generaSuccessore(azione)
 
         self.azioniDisponibili = self.getAzioni()
@@ -223,6 +233,13 @@ class ScopaGame():
         self.turno += 1
 
         self.render()
+
+    def timeOut(self):
+        """
+        Apre una finestra di dialogo avvisando del timeout della comunicazione con il server e chiude il gioco
+        """
+        wx.MessageBox("Impossibile comunicare con il server", "Errore", wx.OK | wx.ICON_ERROR)
+        self.exit()
 
     def exit(self):
         """
