@@ -3,6 +3,7 @@
 import pygame
 import sys
 import game
+import graphic
 import connect
 import socket
 import wx
@@ -19,10 +20,10 @@ class ScopaGame():
         Inizializza l'ambiente di gioco. Si collega al server,
         inizializza lo stato di gioco e l'interfaccia grafica
         """
-        app = wx.App()
-        app.MainLoop()
+        self.app = wx.App()
 
         connSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        connSocket.setblocking(0)
 
         self.connManager = None
         ipServer = self.getIpServer()
@@ -89,7 +90,9 @@ class ScopaGame():
         """
         Stampa il punteggio in un dialog
         """
-        print punteggio
+        punteggioDialog = graphic.PunteggioDialog(punteggio)
+
+        punteggioDialog.ShowModal()
 
     def render(self):
         """
