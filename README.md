@@ -23,6 +23,5 @@ Left and right arrows to browse through possible actions using the selected card
 Return to play your card
 
 ## ToDo List
-* Add a timeout for reading from the socket
 * Manage multiple hands
 * Better graphics
