@@ -77,4 +77,4 @@ class PunteggioDialog(wx.Dialog):
         """
         Chiude la finestra
         """
-        self.Destroy()
+        self.Close()
