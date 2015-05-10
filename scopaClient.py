@@ -80,7 +80,7 @@ class ScopaGame():
         """
         Definisce il loop principale del gioco
         """
-        while ((self.punteggioPlayer < 11 and self.punteggioAgent < 11) or (self.punteggioPlayer == self.punteggioAgent)) and self.run:
+        while ((self.punteggioPlayer < 11 and self.punteggioAgent < 11) or (self.punteggioPlayer == self.punteggioAgent)):
             try:
                 self.stato = self.connManager.receiveState()
                 self.turno = int(self.connManager.readData())
@@ -92,9 +92,12 @@ class ScopaGame():
             self.actionIdx = 0
             self.render()
 
-            while not self.stato.isTerminal():
+            while not self.stato.isTerminal() and self.run:
                 self.onLoop()
                 self.manageEvents()
+
+            if not self.run:
+                break
 
             punteggio = self.stato.punteggio()
             self.punteggioPlayer += punteggio['player']
