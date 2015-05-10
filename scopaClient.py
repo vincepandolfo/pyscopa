@@ -37,8 +37,6 @@ class ScopaGame():
 
         try:
             self.connManager.sendData("play")
-            self.stato = self.connManager.receiveState()
-            self.turno = int(self.connManager.readData())
         except connect.TimeOutError:
             self.timeOut()
 
@@ -47,11 +45,13 @@ class ScopaGame():
         self.scopaSurface = pygame.display.set_mode((600, 500))
         self.initGraphic()
 
+        self.punteggioPlayer = 0
+        self.punteggioAgent = 0
         self.selezionata = -1
         self.actionIdx = 0
-        self.azioniDisponibili = self.getAzioni()
+        self.azioniDisponibili = None
+        self.stato = None
 
-        self.render()
         self.run = True
 
         self.gameLoop()
@@ -80,21 +80,48 @@ class ScopaGame():
         """
         Definisce il loop principale del gioco
         """
-        while not self.stato.isTerminal():
-            self.onLoop()
-            self.manageEvents()
+        while ((self.punteggioPlayer < 11 and self.punteggioAgent < 11) or (self.punteggioPlayer == self.punteggioAgent)) and self.run:
+            try:
+                self.stato = self.connManager.receiveState()
+                self.turno = int(self.connManager.readData())
+            except connect.TimeOutError:
+                self.timeOut()
 
-        self.printPunteggio(self.stato.punteggio())
+            self.azioniDisponibili = self.getAzioni()
+            self.selezionata = -1
+            self.actionIdx = 0
+            self.render()
+
+            while not self.stato.isTerminal():
+                self.onLoop()
+                self.manageEvents()
+
+            punteggio = self.stato.punteggio()
+            self.punteggioPlayer += punteggio['player']
+            self.punteggioAgent += punteggio['agent']
+            self.printPunteggio(punteggio, self.punteggioPlayer, self.punteggioAgent)
+
+        if self.run:
+            self.winner()
 
         self.exit()
 
-    def printPunteggio(self, punteggio):
+    def printPunteggio(self, punteggio, totalePlayer, totaleAgent):
         """
         Stampa il punteggio in un dialog
         """
-        punteggioDialog = graphic.PunteggioDialog(punteggio)
+        punteggioDialog = graphic.PunteggioDialog(punteggio, totalePlayer, totaleAgent)
 
         punteggioDialog.ShowModal()
+
+    def winner(self):
+        """
+        Apre una finestra di dialogo per annunciare il vincitore
+        """
+        if self.punteggioPlayer > self.punteggioAgent:
+            wx.MessageBox("Complimenti! Hai vinto!", "Vittoria!", wx.OK)
+        else:
+            wx.MessageBox("Mi dispiace, hai perso!", "Sconfitta", wx.OK)
 
     def render(self):
         """
@@ -135,6 +162,7 @@ class ScopaGame():
             try:
                 azionePC = self.connManager.receiveAction()
             except connect.TimeOutError:
+                print "Nu m fa sape che bbo fa"
                 self.timeOut()
 
             self.stato = self.stato.generaSuccessore(azionePC)
@@ -223,6 +251,7 @@ class ScopaGame():
         try:
             self.connManager.sendAction(azione)
         except connect.TimeOutError:
+            print "Nu mann che bbogl fa ij"
             self.timeOut()
 
         self.stato = self.stato.generaSuccessore(azione)

@@ -19,11 +19,16 @@ class ClientManager(threading.Thread):
         Inizializza il gestore del client
         """
         super(ClientManager, self).__init__()
-        self.stato = game.GameState()
+
         self.agente = agent.ScopaAgent()
         self.commManager = connect.SocketManager(commSocket)
+
         self.clientId = clientId
         self.clientList = clientList
+
+        self.turno = random.randint(0, 1)
+        self.punteggioPlayer = 0
+        self.punteggioAgent = 0
 
     def run(self):
         """
@@ -31,35 +36,56 @@ class ClientManager(threading.Thread):
         Gestisce la partita del client
         """
 
-        turno = random.randint(0, 1)
+        while (self.punteggioPlayer < 11 and self.punteggioAgent < 11) or self.punteggioPlayer == self.punteggioAgent:
+            try:
+                puntiPlayer, puntiAgent = self.playHand(self.turno)
 
-        self.commManager.sendState(self.stato)
+                self.punteggioPlayer += puntiPlayer
+                self.punteggioAgent += puntiAgent
+            except connect.TimeOutError:
+                break
 
-        self.commManager.sendData(str(turno))
+            self.turno += 1
 
-        while not self.stato.isTerminal():
+        self.clientList.Delete(self.clientList.FindString("Client " + str(self.clientId)))
+
+        self.commManager.close()
+
+    def playHand(self, turno):
+        """
+        Gioca una mano della partita
+        """
+        stato = game.GameState()
+
+        try:
+            self.commManager.sendState(stato)
+            self.commManager.sendData(str(turno))
+        except connect.TimeOutError:
+            raise
+
+        while not stato.isTerminal():
             if turno%2 == 0:
-                azione = self.agente.prossimaAzione(self.stato)
+                azione = self.agente.prossimaAzione(stato)
 
                 try:
                     self.commManager.sendAction(azione)
                 except connect.TimeOutError:
-                    break
+                    raise
 
-                self.stato = self.stato.generaSuccessore(azione)
+                stato = stato.generaSuccessore(azione)
                 turno += 1
             else:
                 try:
                     azione = self.commManager.receiveAction(120)
                 except connect.TimeOutError:
-                    break 
+                    raise
 
-                self.stato = self.stato.generaSuccessore(azione)
+                stato = stato.generaSuccessore(azione)
                 turno += 1
 
-        self.clientList.Delete(self.clientList.FindString("Client " + str(self.clientId)))
+        punteggio = stato.punteggio()
 
-        self.commManager.close()
+        return punteggio['player'], punteggio['agent']
 
 
 class Server(threading.Thread):
@@ -117,8 +143,6 @@ class ServerFrame(wx.Frame):
         """
         # Crea il menu
 
-        self.server = None
-
         menuBar = wx.MenuBar()
 
         serverMenu = wx.Menu()
@@ -140,7 +164,7 @@ class ServerFrame(wx.Frame):
         # Crea la status bar
 
         self.statusBar = self.CreateStatusBar()
-        self.statusBar.SetStatusText("Server non in esecuzione")
+        self.statusBar.SetStatusText("Server in esecuzione")
 
         # Crea la lista dei client
 
@@ -176,6 +200,9 @@ class ServerFrame(wx.Frame):
         self.SetSize((300, 200))
         self.Centre()
         self.Show(True)
+
+        self.server = Server(self.clientList)
+        self.server.start()
 
     def OnStart(self, event):
         """

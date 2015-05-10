@@ -32,16 +32,25 @@ class SocketManager():
         """
         self.commSocket.close()
 
-    def readData(self, timeout=10):
+    def readData(self, timeout=30):
         """
         Legge l'ultimo messaggio in arrivo sul socket. Utilizza un buffer per gestire più messaggi.
         """
+        messaggio = ""
+
+        if len(self.readBuffer) > 0:
+            endMex = self.readBuffer.find("\n")
+            
+            if endMex != -1:
+                messaggio = self.readBuffer[:endMex+1]
+                self.readBuffer = self.readBuffer[endMex+1:]
+                return messaggio[:-1]
+
         prontiLettura, prontiScrittura, errori = select.select([self.commSocket], [], [], timeout)
 
         if len(prontiLettura) == 0:
             raise TimeOutError()
 
-        messaggio = ""
 
         while 1:
             data = self.commSocket.recv(4096)
@@ -58,16 +67,21 @@ class SocketManager():
 
         return messaggio[:-1]
 
-    def sendData(self, messaggio):
+    def sendData(self, messaggio, timeout=30):
         """
         Invia dei dati sul socket
         """
-        prontiLettura, prontiScrittura, errori = select.select([], [self.commSocket], [], 10)
+        prontiLettura, prontiScrittura, errori = select.select([], [self.commSocket], [], timeout)
 
         if len(prontiScrittura) == 0:
             raise TimeOutError()
 
-        self.commSocket.sendall(messaggio+'\n')
+        messaggio += "\n"
+
+        while messaggio:
+            inviati = self.commSocket.send(messaggio)
+            messaggio = messaggio[inviati:]
+
 
     def receiveAction(self, timeout=10):
         """

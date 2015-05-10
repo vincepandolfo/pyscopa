@@ -5,14 +5,17 @@ class PunteggioDialog(wx.Dialog):
     Gestisce una finestra di dialogo customizzata per la visualizzazione del punteggio
     """
 
-    def __init__(self, punteggio):
+    def __init__(self, punteggio, totalePlayer, totaleAgent):
         """
         Inizializza la finestra di dialogo
         """
         super(PunteggioDialog, self).__init__(None, title="Punteggio")
 
         self.punteggio = punteggio
-        self.SetSize((300, 220))
+        self.totalePlayer = totalePlayer
+        self.totaleAgent = totaleAgent
+
+        self.SetSize((300, 250))
         self.initUI()
 
     def initUI(self):
@@ -35,6 +38,8 @@ class PunteggioDialog(wx.Dialog):
         sbsPlayer.Add(wx.StaticText(playerPanel, label="Scope: " + str(self.punteggio['scopePlayer'])), border=5)
         sbsPlayer.Add(wx.StaticLine(playerPanel), border=5)
         sbsPlayer.Add(wx.StaticText(playerPanel, label="Punteggio: " + str(self.punteggio['player'])), border=5)
+        sbsPlayer.Add(wx.StaticLine(playerPanel), border=5)
+        sbsPlayer.Add(wx.StaticText(playerPanel, label="Totale partita: " + str(self.totalePlayer)))
 
         playerPanel.SetSizer(sbsPlayer)
 
@@ -51,9 +56,10 @@ class PunteggioDialog(wx.Dialog):
         sbsAgent.Add(wx.StaticText(agentPanel, label="Scope: " + str(self.punteggio['scopeAgent'])), border=5)
         sbsAgent.Add(wx.StaticLine(agentPanel), border=5)
         sbsAgent.Add(wx.StaticText(agentPanel, label="Punteggio: " + str(self.punteggio['agent'])), border=5)
+        sbsAgent.Add(wx.StaticLine(agentPanel), border=5)
+        sbsAgent.Add(wx.StaticText(agentPanel, label="Totale partita: " + str(self.totaleAgent)))
 
         agentPanel.SetSizer(sbsAgent)
-
 
         punteggioBox.Add(playerPanel, flag=wx.LEFT, proportion=1, border=5)
         punteggioBox.Add(agentPanel, flag=wx.RIGHT, proportion=1, border=5)
