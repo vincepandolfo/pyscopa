@@ -71,10 +71,10 @@ class PunteggioDialog(wx.Dialog):
 
         self.SetSizer(mainBox)
 
-        okButton.Bind(wx.EVT_BUTTON, self.OnClose)
+        okButton.Bind(wx.EVT_BUTTON, self.onClose)
 
-    def OnClose(self, e):
+    def onClose(self, e):
         """
-        Chiude la finestra di dialogo alla pressione del bottone
+        Chiude la finestra
         """
-        self.Close()
+        self.Destroy()
