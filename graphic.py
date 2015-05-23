@@ -14,7 +14,7 @@ class PunteggioDialog(wx.Dialog):
         self.totalePlayer = totalePlayer
         self.totaleAgent = totaleAgent
 
-        self.SetSize((300, 250))
+        self.InitUI()
 
     def initUI(self):
         """
