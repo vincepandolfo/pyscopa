@@ -20,8 +20,9 @@ class ClientManager(threading.Thread):
         """
         super(ClientManager, self).__init__()
 
-        self.agente = agent.ScopaAgent()
         self.commManager = connect.SocketManager(commSocket)
+
+        self.agente = agent.ScopaAgent()
 
         self.clientId = clientId
         self.clientList = clientList
@@ -29,6 +30,13 @@ class ClientManager(threading.Thread):
         self.turno = random.randint(0, 1)
         self.punteggioPlayer = 0
         self.punteggioAgent = 0
+
+    def setDifficolta(self, difficolta):
+        """
+        Imposta la difficoltà della partita
+        """
+        print difficolta
+        self.agente = agent.ScopaAgent(difficolta)
 
     def run(self):
         """
@@ -122,7 +130,9 @@ class Server(threading.Thread):
             if firstMessage == "chiudi":
                 run = False
             else:
+                clientM.setDifficolta(firstMessage)
                 clientM.start()
+
                 self.clientList.Append("Client " + str(self.clientId))
                 self.clientId += 1
 

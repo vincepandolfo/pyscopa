@@ -36,7 +36,7 @@ class ScopaGame():
         self.connManager = connect.SocketManager(connSocket)
 
         try:
-            self.connManager.sendData("play")
+            self.connManager.sendData(self.getDifficolta())
         except connect.TimeOutError:
             self.timeOut()
 
@@ -75,6 +75,16 @@ class ScopaGame():
                 wx.MessageBox("Indirizzo IP non valido", "Errore", wx.OK | wx.ICON_ERROR)
 
         return ipServer
+
+    def getDifficolta(self):
+        """
+        Prende in input la difficoltà di gioco desiderata dall'utente
+        """
+        difficoltaDialog = wx.SingleChoiceDialog(None, "Seleziona la difficoltà", "Difficoltà", ["facile", "medio", "difficile"])
+
+        difficoltaDialog.ShowModal()
+
+        return difficoltaDialog.GetStringSelection()
 
     def gameLoop(self):
         """

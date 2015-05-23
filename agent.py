@@ -7,7 +7,6 @@ class ScopaAgent:
     Contiene i metodi e le informazioni dell'agente 
     """
     def __init__(self, diff = 'difficile'):
-        self.mani = 0
         self.depth = 1
         if diff == 'difficile':
             self.value = self.alphabeta
@@ -90,7 +89,20 @@ class ScopaAgent:
             return self.maxValue(stato, prof+1, a, b)
         else:
             return self.minValue(stato, prof, a, b)
+
+    def reflex(self, stato, *args):
+        """
+        Seleziona l'azione migliore che da il miglior risultato subito dopo essere eseguita
+        """
+        azioneMigliore = [None, float('-inf')]
+
+        for azione in stato.getAzioniLegali('agent'):
+            nuovoStato = stato.generaSuccessore(azione)
+            
+            if self.valuta(nuovoStato) > azioneMigliore[1]:
+                azioneMigliore = [azione, self.valuta(nuovoStato)]
+
+        return azioneMigliore
             
     def prossimaAzione(self, stato):
-        self.mani = 0
         return self.value(stato, 0, 'agent', float('-inf'), float('inf'))[0]
