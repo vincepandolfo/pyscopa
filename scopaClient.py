@@ -165,8 +165,10 @@ class ScopaGame():
             try:
                 azionePC = self.connManager.receiveAction()
             except connect.TimeOutError:
-                print "Nu m fa sape che bbo fa"
                 self.timeOut()
+
+            azioneDialog = graphic.AzioneDialog(azionePC)
+            azioneDialog.ShowModal()
 
             self.stato = self.stato.generaSuccessore(azionePC)
             self.azioniDisponibili = self.getAzioni()

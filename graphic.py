@@ -10,13 +10,11 @@ class PunteggioDialog(wx.Dialog):
         Inizializza la finestra di dialogo
         """
         super(PunteggioDialog, self).__init__(None, title="Punteggio")
-
         self.punteggio = punteggio
         self.totalePlayer = totalePlayer
         self.totaleAgent = totaleAgent
 
         self.SetSize((300, 250))
-        self.initUI()
 
     def initUI(self):
         """
@@ -73,8 +71,70 @@ class PunteggioDialog(wx.Dialog):
 
         okButton.Bind(wx.EVT_BUTTON, self.onClose)
 
+        self.Fit()
+
     def onClose(self, e):
         """
         Chiude la finestra
+        """
+        self.Close()
+
+class AzioneDialog(wx.Dialog):
+    """
+    Definisce la finestra di dialogo che contiene un azione eseguita
+    """
+
+    def __init__(self, azione):
+        """
+        Inizializza la finestra di dialogo
+        """
+        super(AzioneDialog, self).__init__(None, title="Azione avversaria")
+
+        self.azione = azione
+
+        self.initUI()
+
+    def initUI(self):
+        """
+        Inizializza la grafica e ne carica il contenuto
+        """
+        dialogSizer = wx.BoxSizer(wx.VERTICAL)
+
+        boldFont = wx.Font(14, wx.DEFAULT, wx.NORMAL, wx.BOLD)
+
+        giocataText = wx.StaticText(self, label="Carta giocata:")
+        giocataText.SetFont(boldFont)
+
+        dialogSizer.Add(giocataText, border=5)
+        dialogSizer.Add(wx.StaticText(self, label= str(self.azione['carta'][1]) + " di " + self.azione['carta'][0]), border=5)
+
+        dialogSizer.AddSpacer(10)
+
+        preseText = wx.StaticText(self, label="Carte prese:")
+        preseText.SetFont(boldFont)
+
+        dialogSizer.Add(preseText, border=5)
+
+        for carta in self.azione['pigliata']:
+            dialogSizer.Add(wx.StaticText(self, label= str(carta[1]) + " di " + carta[0]), border=5)
+
+        if len(self.azione['pigliata']) == 0:
+            dialogSizer.Add(wx.StaticText(self, label="Nessuna"), border=5)
+
+        dialogSizer.AddSpacer(10)
+
+        okButton = wx.Button(self, label="Ok")
+
+        dialogSizer.Add(okButton, flag=wx.ALIGN_CENTER|wx.BOTTOM)
+
+        self.SetSizer(dialogSizer)
+
+        okButton.Bind(wx.EVT_BUTTON, self.onClose)
+
+        self.Fit()
+
+    def onClose(self, e):
+        """
+        Chiude la finestra 
         """
         self.Close()
