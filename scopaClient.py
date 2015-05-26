@@ -41,7 +41,7 @@ class ScopaGame():
             self.timeOut()
 
         pygame.init()
-        pygame.display.set_caption("PyScopa 0.1")
+        pygame.display.set_caption("PyScopa 0.2")
         self.scopaSurface = pygame.display.set_mode((600, 500))
         self.initGraphic()
 
@@ -80,7 +80,7 @@ class ScopaGame():
         """
         Prende in input la difficoltà di gioco desiderata dall'utente
         """
-        difficoltaDialog = wx.SingleChoiceDialog(None, "Seleziona la difficoltà", "Difficoltà", ["facile", "medio", "difficile"])
+        difficoltaDialog = wx.SingleChoiceDialog(None, "Seleziona la difficoltà", "Difficoltà", ["facile", "difficile"])
 
         difficoltaDialog.ShowModal()
 

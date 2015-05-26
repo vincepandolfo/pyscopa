@@ -11,8 +11,6 @@ class ScopaAgent:
         if diff == 'difficile':
             self.value = self.alphabeta
             self.depth = 6
-        elif diff == 'media':
-            self.value = self.expectimax
         elif diff == 'facile':
             self.value = self.reflex
             
@@ -44,8 +42,6 @@ class ScopaAgent:
             pesoDenari = 0
 
         return sette + pesoCarte*punteggio['lungoAgent'] + pesoDenari*punteggio['denariAgent'] + pesoScope*punteggio['scopeAgent'] + pesoSettanta 
-
-    # Implementazione alpha-beta pruning (Overlord) diff == difficile
     
     def minValue(self, stato, prof, a, b):
         azioneMigliore = [None, float('inf')]
@@ -80,7 +76,7 @@ class ScopaAgent:
                 a = max(a, nuovoValore)
                 
         return azioneMigliore
-    
+
     def alphabeta(self, stato, prof, agent, a, b):
         if prof == self.depth or stato.isTerminal():
             return [None, self.valuta(stato)]

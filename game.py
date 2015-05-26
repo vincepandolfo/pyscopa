@@ -133,7 +133,7 @@ class GameState:
         Ritorna una lista contenente le possibili azioni effettuabili da un giocatore
         """
         azioniLegali = []
-        
+
         if giocatore == 'player':
             mano = self.manoPlayer
         else:
