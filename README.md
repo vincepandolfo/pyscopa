@@ -23,6 +23,4 @@ Left and right arrows to browse through possible actions using the selected card
 Return to play your card
 
 ## ToDo List
-* "Medium" and "Easy" difficulties
-* Manage multiple hands
 * Better graphics
