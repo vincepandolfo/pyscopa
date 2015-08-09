@@ -12,9 +12,11 @@ from pygame.locals import *
 
 
 class ScopaGame():
+
     """
     In questa classe viene gestita l'interfaccia del gioco e l'interazione con l'utente
     """
+
     def __init__(self):
         """
         Inizializza l'ambiente di gioco. Si collega al server,
@@ -30,7 +32,10 @@ class ScopaGame():
         try:
             connSocket.connect((ipServer, 53074))
         except socket.error as e:
-            wx.MessageBox("Connessione non riuscita", "Errore", wx.OK | wx.ICON_ERROR)
+            wx.MessageBox(
+                "Connessione non riuscita",
+                "Errore",
+                wx.OK | wx.ICON_ERROR)
             self.exit()
 
         self.connManager = connect.SocketManager(connSocket)
@@ -63,7 +68,10 @@ class ScopaGame():
         valid = False
         ipServer = ""
         while not valid:
-            ipServer = wx.GetTextFromUser("Inserisci l'indirizzo IP del server", "IP server", "127.0.0.1")
+            ipServer = wx.GetTextFromUser(
+                "Inserisci l'indirizzo IP del server",
+                "IP server",
+                "127.0.0.1")
 
             if ipServer == "":
                 self.exit()
@@ -72,7 +80,10 @@ class ScopaGame():
                 socket.inet_aton(ipServer)
                 valid = True
             except socket.error:
-                wx.MessageBox("Indirizzo IP non valido", "Errore", wx.OK | wx.ICON_ERROR)
+                wx.MessageBox(
+                    "Indirizzo IP non valido",
+                    "Errore",
+                    wx.OK | wx.ICON_ERROR)
 
         return ipServer
 
@@ -80,7 +91,9 @@ class ScopaGame():
         """
         Prende in input la difficoltà di gioco desiderata dall'utente
         """
-        difficoltaDialog = wx.SingleChoiceDialog(None, "Seleziona la difficoltà", "Difficoltà", ["facile", "difficile"])
+        difficoltaDialog = wx.SingleChoiceDialog(
+            None, "Seleziona la difficoltà", "Difficoltà", [
+                "facile", "difficile"])
 
         difficoltaDialog.ShowModal()
 
@@ -90,7 +103,8 @@ class ScopaGame():
         """
         Definisce il loop principale del gioco
         """
-        while ((self.punteggioPlayer < 11 and self.punteggioAgent < 11) or (self.punteggioPlayer == self.punteggioAgent)):
+        while ((self.punteggioPlayer < 11 and self.punteggioAgent < 11)
+               or (self.punteggioPlayer == self.punteggioAgent)):
             try:
                 self.stato = self.connManager.receiveState()
                 self.turno = int(self.connManager.readData())
@@ -112,7 +126,10 @@ class ScopaGame():
             punteggio = self.stato.punteggio()
             self.punteggioPlayer += punteggio['player']
             self.punteggioAgent += punteggio['agent']
-            self.printPunteggio(punteggio, self.punteggioPlayer, self.punteggioAgent)
+            self.printPunteggio(
+                punteggio,
+                self.punteggioPlayer,
+                self.punteggioAgent)
 
         if self.run:
             self.winner()
@@ -123,7 +140,10 @@ class ScopaGame():
         """
         Stampa il punteggio in un dialog
         """
-        punteggioDialog = graphic.PunteggioDialog(punteggio, totalePlayer, totaleAgent)
+        punteggioDialog = graphic.PunteggioDialog(
+            punteggio,
+            totalePlayer,
+            totaleAgent)
 
         punteggioDialog.ShowModal()
 
@@ -144,7 +164,17 @@ class ScopaGame():
 
         for idx in range(0, len(self.stato.manoPlayer)):
             if idx == self.selezionata:
-                pygame.draw.rect(self.scopaSurface, (30, 144, 255), (self.inManoPos[idx][0]-4, self.inManoPos[idx][1]-4, 78, 128))
+                pygame.draw.rect(
+                    self.scopaSurface,
+                    (30,
+                     144,
+                     255),
+                    (self.inManoPos[idx][0] -
+                     4,
+                     self.inManoPos[idx][1] -
+                        4,
+                        78,
+                        128))
 
             carta = self.stato.manoPlayer[idx]
 
@@ -154,10 +184,28 @@ class ScopaGame():
             carta = self.stato.terra[idx]
 
             if self.selezionata != -1:
-                if self.stato.terra[idx] in self.azioniDisponibili[self.stato.manoPlayer[self.selezionata]][self.actionIdx]:
-                    pygame.draw.rect(self.scopaSurface, (30, 144, 255), (self.terraPos[0] + 75*idx - 4, self.terraPos[1] - 4, 78, 128))
+                if self.stato.terra[idx] in self.azioniDisponibili[
+                        self.stato.manoPlayer[self.selezionata]][self.actionIdx]:
+                    pygame.draw.rect(
+                        self.scopaSurface,
+                        (30,
+                         144,
+                         255),
+                        (self.terraPos[0] +
+                         75 *
+                         idx -
+                         4,
+                         self.terraPos[1] -
+                            4,
+                            78,
+                            128))
 
-            self.scopaSurface.blit(self.carte[carta], (self.terraPos[0] + 75*idx, self.terraPos[1]))
+            self.scopaSurface.blit(
+                self.carte[carta],
+                (self.terraPos[0] +
+                 75 *
+                 idx,
+                 self.terraPos[1]))
 
         for idx in range(0, len(self.stato.manoAgent)):
             self.scopaSurface.blit(self.retro, self.avvPos[idx])
@@ -199,16 +247,22 @@ class ScopaGame():
         self.retro.convert()
         self.retro = pygame.transform.scale(self.retro, (70, 120))
 
-        self.carte = {(seme, i): pygame.image.load("img/" + seme + str(i) + ".png") for seme in semi for i in range(1, 11)}
+        self.carte = {(seme, i): pygame.image.load(
+            "img/" + seme + str(i) + ".png") for seme in semi for i in range(1, 11)}
         for key in self.carte:
             self.carte[key].convert()
-            self.carte[key] = pygame.transform.scale(self.carte[key], (70, 120))
+            self.carte[key] = pygame.transform.scale(
+                self.carte[key], (70, 120))
 
         self.inManoPos = [(185, 370), (265, 370), (345, 370)]
         self.terraPos = (10, 190)
         self.avvPos = [(185, 10), (265, 10), (345, 10)]
 
-        self.clickableRect = [pygame.Rect(170, 370, 70, 120), pygame.Rect(250, 370, 70, 120), pygame.Rect(330, 370, 70, 120)]
+        self.clickableRect = [
+            pygame.Rect(
+                170, 370, 70, 120), pygame.Rect(
+                250, 370, 70, 120), pygame.Rect(
+                330, 370, 70, 120)]
 
     def manageEvents(self):
         """
@@ -232,10 +286,18 @@ class ScopaGame():
 
                 if event.type == KEYDOWN:
                     if event.key == K_LEFT:
-                        self.actionIdx = (self.actionIdx-1) % len(self.azioniDisponibili[self.stato.manoPlayer[self.selezionata]])
+                        self.actionIdx = (
+                            self.actionIdx - 1) % len(
+                            self.azioniDisponibili[
+                                self.stato.manoPlayer[
+                                    self.selezionata]])
                         self.render()
                     if event.key == K_RIGHT:
-                        self.actionIdx = (self.actionIdx+1) % len(self.azioniDisponibili[self.stato.manoPlayer[self.selezionata]])
+                        self.actionIdx = (
+                            self.actionIdx + 1) % len(
+                            self.azioniDisponibili[
+                                self.stato.manoPlayer[
+                                    self.selezionata]])
                         self.render()
                     if event.key == K_RETURN and self.selezionata != -1:
                         self.execAction()
@@ -282,7 +344,10 @@ class ScopaGame():
         """
         Apre una finestra di dialogo avvisando del timeout della comunicazione con il server e chiude il gioco
         """
-        wx.MessageBox("Impossibile comunicare con il server", "Errore", wx.OK | wx.ICON_ERROR)
+        wx.MessageBox(
+            "Impossibile comunicare con il server",
+            "Errore",
+            wx.OK | wx.ICON_ERROR)
         self.exit()
 
     def exit(self):

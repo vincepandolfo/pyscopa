@@ -1,12 +1,14 @@
 # coding=UTF-8
 
-import socket 
+import socket
 import json
 import game
 import time
 import select
 
+
 class TimeOutError(Exception):
+
     """
     Definisce l'errore da richiamare nel caso di timeout delle comunicazioni.
     """
@@ -14,13 +16,14 @@ class TimeOutError(Exception):
 
 
 class SocketManager():
+
     """
     Gestisce la comunicazione tra client e server. Può essere utilizzata sia dal client che dal server
     """
 
     def __init__(self, commSocket):
         """
-        Inizializza l'oggetto SocktManager con il socket da utilizzare per la comunicazione 
+        Inizializza l'oggetto SocktManager con il socket da utilizzare per la comunicazione
         """
         self.commSocket = commSocket
         self.commSocket.setblocking(0)
@@ -40,19 +43,19 @@ class SocketManager():
 
         if len(self.readBuffer) > 0:
             endMex = self.readBuffer.find("\n")
-            
+
             if endMex != -1:
-                messaggio = self.readBuffer[:endMex+1]
-                self.readBuffer = self.readBuffer[endMex+1:]
+                messaggio = self.readBuffer[:endMex + 1]
+                self.readBuffer = self.readBuffer[endMex + 1:]
                 return messaggio[:-1]
 
-        prontiLettura, prontiScrittura, errori = select.select([self.commSocket], [], [], timeout)
+        prontiLettura, prontiScrittura, errori = select.select(
+            [self.commSocket], [], [], timeout)
 
         if len(prontiLettura) == 0:
             raise TimeOutError()
 
-
-        while 1:
+        while True:
             data = self.commSocket.recv(4096)
             if not data:
                 continue
@@ -61,8 +64,8 @@ class SocketManager():
             endMex = self.readBuffer.find("\n")
 
             if endMex != -1:
-                messaggio = self.readBuffer[:endMex+1]
-                self.readBuffer = self.readBuffer[endMex+1:]
+                messaggio = self.readBuffer[:endMex + 1]
+                self.readBuffer = self.readBuffer[endMex + 1:]
                 break
 
         return messaggio[:-1]
@@ -71,7 +74,9 @@ class SocketManager():
         """
         Invia dei dati sul socket
         """
-        prontiLettura, prontiScrittura, errori = select.select([], [self.commSocket], [], timeout)
+        prontiLettura, prontiScrittura, errori = select.select(
+            [], [
+                self.commSocket], [], timeout)
 
         if len(prontiScrittura) == 0:
             raise TimeOutError()
@@ -81,7 +86,6 @@ class SocketManager():
         while messaggio:
             inviati = self.commSocket.send(messaggio)
             messaggio = messaggio[inviati:]
-
 
     def receiveAction(self, timeout=10):
         """
@@ -118,13 +122,13 @@ class SocketManager():
         Invia uno stato di gioco
         """
         statoDaInviare = ("terra|" + json.dumps(stato.terra) +
-            "|mazzo|" + json.dumps(stato.mazzo) +
-            "|manoPlayer|" + json.dumps(stato.manoPlayer) +
-            "|manoAgent|" + json.dumps(stato.manoAgent) +
-            "|pigliatePlayer|" + json.dumps(stato.pigliatePlayer) +
-            "|pigliateAgent|" + json.dumps(stato.pigliateAgent) +
-            "|scopePlayer|" + json.dumps(stato.scopePlayer) +
-            "|scopeAgent|" + json.dumps(stato.scopeAgent))
+                          "|mazzo|" + json.dumps(stato.mazzo) +
+                          "|manoPlayer|" + json.dumps(stato.manoPlayer) +
+                          "|manoAgent|" + json.dumps(stato.manoAgent) +
+                          "|pigliatePlayer|" + json.dumps(stato.pigliatePlayer) +
+                          "|pigliateAgent|" + json.dumps(stato.pigliateAgent) +
+                          "|scopePlayer|" + json.dumps(stato.scopePlayer) +
+                          "|scopeAgent|" + json.dumps(stato.scopeAgent))
 
         try:
             self.sendData(statoDaInviare)
@@ -143,6 +147,6 @@ class SocketManager():
         params = {}
 
         for idx in range(0, len(stato), 2):
-            params[stato[idx]] = json.loads(stato[idx+1])
+            params[stato[idx]] = json.loads(stato[idx + 1])
 
         return game.GameState(**params)

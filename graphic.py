@@ -1,6 +1,8 @@
 import wx
 
+
 class PunteggioDialog(wx.Dialog):
+
     """
     Gestisce una finestra di dialogo customizzata per la visualizzazione del punteggio
     """
@@ -29,15 +31,31 @@ class PunteggioDialog(wx.Dialog):
 
         sbsPlayer = wx.StaticBoxSizer(sbPlayer, orient=wx.VERTICAL)
 
-        sbsPlayer.Add(wx.StaticText(playerPanel, label="Carte prese: " + str(self.punteggio['lungoPlayer'])), border=5)
-        sbsPlayer.Add(wx.StaticText(playerPanel, label="Carte a denari: " + str(self.punteggio['denariPlayer'])), border=5)
-        sbsPlayer.Add(wx.StaticText(playerPanel, label="Sette bello: " + ("Si" if self.punteggio['sette'] == 'player' else "No")), border=5)
-        sbsPlayer.Add(wx.StaticText(playerPanel, label="Settanta: " + str(self.punteggio['settantaPlayer'])), border=5)
-        sbsPlayer.Add(wx.StaticText(playerPanel, label="Scope: " + str(self.punteggio['scopePlayer'])), border=5)
+        sbsPlayer.Add(wx.StaticText(playerPanel,
+                                    label="Carte prese: " + str(self.punteggio['lungoPlayer'])),
+                      border=5)
+        sbsPlayer.Add(wx.StaticText(playerPanel,
+                                    label="Carte a denari: " + str(self.punteggio['denariPlayer'])),
+                      border=5)
+        sbsPlayer.Add(
+            wx.StaticText(
+                playerPanel,
+                label="Sette bello: " + (
+                    "Si" if self.punteggio['sette'] == 'player' else "No")),
+            border=5)
+        sbsPlayer.Add(wx.StaticText(playerPanel,
+                                    label="Settanta: " + str(self.punteggio['settantaPlayer'])),
+                      border=5)
+        sbsPlayer.Add(wx.StaticText(playerPanel,
+                                    label="Scope: " + str(self.punteggio['scopePlayer'])),
+                      border=5)
         sbsPlayer.Add(wx.StaticLine(playerPanel), border=5)
-        sbsPlayer.Add(wx.StaticText(playerPanel, label="Punteggio: " + str(self.punteggio['player'])), border=5)
+        sbsPlayer.Add(wx.StaticText(playerPanel,
+                                    label="Punteggio: " + str(self.punteggio['player'])),
+                      border=5)
         sbsPlayer.Add(wx.StaticLine(playerPanel), border=5)
-        sbsPlayer.Add(wx.StaticText(playerPanel, label="Totale partita: " + str(self.totalePlayer)))
+        sbsPlayer.Add(
+            wx.StaticText(playerPanel, label="Totale partita: " + str(self.totalePlayer)))
 
         playerPanel.SetSizer(sbsPlayer)
 
@@ -47,15 +65,27 @@ class PunteggioDialog(wx.Dialog):
 
         sbsAgent = wx.StaticBoxSizer(sbAgent, orient=wx.VERTICAL)
 
-        sbsAgent.Add(wx.StaticText(agentPanel, label="Carte prese: " + str(self.punteggio['lungoAgent'])), border=5)
-        sbsAgent.Add(wx.StaticText(agentPanel, label="Carte a denari: " + str(self.punteggio['denariAgent'])), border=5)
-        sbsAgent.Add(wx.StaticText(agentPanel, label="Sette bello: " + ("Si" if self.punteggio['sette'] == 'agent' else "No")), border=5)
-        sbsAgent.Add(wx.StaticText(agentPanel, label="Settanta: " + str(self.punteggio['settantaAgent'])), border=5)
-        sbsAgent.Add(wx.StaticText(agentPanel, label="Scope: " + str(self.punteggio['scopeAgent'])), border=5)
+        sbsAgent.Add(wx.StaticText(agentPanel,
+                                   label="Carte prese: " + str(self.punteggio['lungoAgent'])),
+                     border=5)
+        sbsAgent.Add(wx.StaticText(agentPanel,
+                                   label="Carte a denari: " + str(self.punteggio['denariAgent'])),
+                     border=5)
+        sbsAgent.Add(wx.StaticText(agentPanel, label="Sette bello: " +
+                                   ("Si" if self.punteggio['sette'] == 'agent' else "No")), border=5)
+        sbsAgent.Add(wx.StaticText(agentPanel,
+                                   label="Settanta: " + str(self.punteggio['settantaAgent'])),
+                     border=5)
+        sbsAgent.Add(wx.StaticText(agentPanel,
+                                   label="Scope: " + str(self.punteggio['scopeAgent'])),
+                     border=5)
         sbsAgent.Add(wx.StaticLine(agentPanel), border=5)
-        sbsAgent.Add(wx.StaticText(agentPanel, label="Punteggio: " + str(self.punteggio['agent'])), border=5)
+        sbsAgent.Add(wx.StaticText(agentPanel,
+                                   label="Punteggio: " + str(self.punteggio['agent'])),
+                     border=5)
         sbsAgent.Add(wx.StaticLine(agentPanel), border=5)
-        sbsAgent.Add(wx.StaticText(agentPanel, label="Totale partita: " + str(self.totaleAgent)))
+        sbsAgent.Add(
+            wx.StaticText(agentPanel, label="Totale partita: " + str(self.totaleAgent)))
 
         agentPanel.SetSizer(sbsAgent)
 
@@ -64,8 +94,8 @@ class PunteggioDialog(wx.Dialog):
 
         okButton = wx.Button(self, label="Ok")
 
-        mainBox.Add(punteggioBox, flag=wx.ALL|wx.EXPAND, border=5)
-        mainBox.Add(okButton, flag=wx.ALIGN_CENTER|wx.BOTTOM, border=10)
+        mainBox.Add(punteggioBox, flag=wx.ALL | wx.EXPAND, border=5)
+        mainBox.Add(okButton, flag=wx.ALIGN_CENTER | wx.BOTTOM, border=10)
 
         self.SetSizer(mainBox)
 
@@ -79,7 +109,9 @@ class PunteggioDialog(wx.Dialog):
         """
         self.Close()
 
+
 class AzioneDialog(wx.Dialog):
+
     """
     Definisce la finestra di dialogo che contiene un azione eseguita
     """
@@ -106,7 +138,14 @@ class AzioneDialog(wx.Dialog):
         giocataText.SetFont(boldFont)
 
         dialogSizer.Add(giocataText, border=5)
-        dialogSizer.Add(wx.StaticText(self, label= str(self.azione['carta'][1]) + " di " + self.azione['carta'][0]), border=5)
+        dialogSizer.Add(
+            wx.StaticText(
+                self,
+                label=str(
+                    self.azione['carta'][1]) +
+                " di " +
+                self.azione['carta'][0]),
+            border=5)
 
         dialogSizer.AddSpacer(10)
 
@@ -116,7 +155,14 @@ class AzioneDialog(wx.Dialog):
         dialogSizer.Add(preseText, border=5)
 
         for carta in self.azione['pigliata']:
-            dialogSizer.Add(wx.StaticText(self, label= str(carta[1]) + " di " + carta[0]), border=5)
+            dialogSizer.Add(
+                wx.StaticText(
+                    self,
+                    label=str(
+                        carta[1]) +
+                    " di " +
+                    carta[0]),
+                border=5)
 
         if len(self.azione['pigliata']) == 0:
             dialogSizer.Add(wx.StaticText(self, label="Nessuna"), border=5)
@@ -125,7 +171,7 @@ class AzioneDialog(wx.Dialog):
 
         okButton = wx.Button(self, label="Ok")
 
-        dialogSizer.Add(okButton, flag=wx.ALIGN_CENTER|wx.BOTTOM)
+        dialogSizer.Add(okButton, flag=wx.ALIGN_CENTER | wx.BOTTOM)
 
         self.SetSizer(dialogSizer)
 
@@ -135,6 +181,6 @@ class AzioneDialog(wx.Dialog):
 
     def onClose(self, e):
         """
-        Chiude la finestra 
+        Chiude la finestra
         """
         self.Close()

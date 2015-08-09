@@ -10,6 +10,7 @@ import wx
 
 
 class ClientManager(threading.Thread):
+
     """
     Questa classe definisce il thread del server che gestisce la partita di un client
     """
@@ -44,7 +45,8 @@ class ClientManager(threading.Thread):
         Gestisce la partita del client
         """
 
-        while (self.punteggioPlayer < 11 and self.punteggioAgent < 11) or self.punteggioPlayer == self.punteggioAgent:
+        while (self.punteggioPlayer < 11 and self.punteggioAgent <
+               11) or self.punteggioPlayer == self.punteggioAgent:
             try:
                 puntiPlayer, puntiAgent = self.playHand(self.turno)
 
@@ -55,7 +57,8 @@ class ClientManager(threading.Thread):
 
             self.turno += 1
 
-        self.clientList.Delete(self.clientList.FindString("Client " + str(self.clientId)))
+        self.clientList.Delete(
+            self.clientList.FindString("Client " + str(self.clientId)))
 
         self.commManager.close()
 
@@ -72,7 +75,7 @@ class ClientManager(threading.Thread):
             raise
 
         while not stato.isTerminal():
-            if turno%2 == 0:
+            if turno % 2 == 0:
                 azione = self.agente.prossimaAzione(stato)
 
                 try:
@@ -97,9 +100,11 @@ class ClientManager(threading.Thread):
 
 
 class Server(threading.Thread):
+
     """
     Definisce il server
     """
+
     def __init__(self, clientList):
         """
         Inizializza il server
@@ -108,7 +113,7 @@ class Server(threading.Thread):
 
         self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.serverSocket.bind( ('', 53074) )
+        self.serverSocket.bind(('', 53074))
         self.serverSocket.listen(5)
         self.clientList = clientList
 
@@ -119,7 +124,10 @@ class Server(threading.Thread):
         while run:
             (clientSocket, indirizzo) = self.serverSocket.accept()
 
-            clientM = ClientManager(clientSocket, self.clientId, self.clientList)
+            clientM = ClientManager(
+                clientSocket,
+                self.clientId,
+                self.clientList)
 
             try:
                 firstMessage = clientM.commManager.readData()
@@ -138,12 +146,19 @@ class Server(threading.Thread):
 
         self.serverSocket.close()
 
+
 class ServerFrame(wx.Frame):
+
     """
     GUI del server
     """
+
     def __init__(self):
-        super(ServerFrame, self).__init__(None, style=wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX)
+        super(
+            ServerFrame,
+            self).__init__(
+            None,
+            style=wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX)
 
         self.InitUI()
 
@@ -168,7 +183,7 @@ class ServerFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnExit, exit)
 
         menuBar.Append(serverMenu, "&Server")
-        
+
         self.SetMenuBar(menuBar)
 
         # Crea la status bar
@@ -216,17 +231,23 @@ class ServerFrame(wx.Frame):
 
     def OnStart(self, event):
         """
-        Avvia il server 
+        Avvia il server
         """
         if not self.server:
             self.server = Server(self.clientList)
             self.server.start()
             self.statusBar.SetStatusText("Server in esecuzione")
-            wx.MessageBox("Server avviato", "Info server", wx.OK | wx.ICON_INFORMATION)
+            wx.MessageBox(
+                "Server avviato",
+                "Info server",
+                wx.OK | wx.ICON_INFORMATION)
         else:
-            wx.MessageBox("Il server è già in funzione", "Info server", wx.OK | wx.ICON_INFORMATION)
+            wx.MessageBox(
+                "Il server è già in funzione",
+                "Info server",
+                wx.OK | wx.ICON_INFORMATION)
 
-    def OnStop(self, event, exit = False):
+    def OnStop(self, event, exit=False):
         """
         Ferma il server
         """
@@ -241,10 +262,15 @@ class ServerFrame(wx.Frame):
 
             self.statusBar.SetStatusText("Server non in esecuzione")
             if not exit:
-                wx.MessageBox("Server chiuso", "Info server", wx.OK | wx.ICON_INFORMATION)
+                wx.MessageBox(
+                    "Server chiuso",
+                    "Info server",
+                    wx.OK | wx.ICON_INFORMATION)
         elif not exit:
-            wx.MessageBox("Il server non è in funzione", "Info server", wx.OK | wx.ICON_INFORMATION)
-            
+            wx.MessageBox(
+                "Il server non è in funzione",
+                "Info server",
+                wx.OK | wx.ICON_INFORMATION)
 
     def OnExit(self, event):
         """
@@ -266,6 +292,6 @@ class ServerFrame(wx.Frame):
         pass
 
 if __name__ == "__main__":
-   app = wx.App()
-   ServerFrame()
-   app.MainLoop()
+    app = wx.App()
+    ServerFrame()
+    app.MainLoop()
