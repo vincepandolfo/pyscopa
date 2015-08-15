@@ -1,6 +1,10 @@
 # pyscopa
 Python client-server application to play the popular card game "Scopa"
 
+## Features
+* Play over the Internet - the game provides a server to host multiple matches over TCP connections
+* Two difficulties - Easy, using a simple "reflex" strategy, and Hard, using the more complex MiniMax algorithm.
+
 ## Dependencies
 * Python 2.7
 * PyGame
