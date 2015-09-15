@@ -328,7 +328,6 @@ class ScopaGame():
         try:
             self.connManager.sendAction(azione)
         except connect.TimeOutError:
-            print "Nu mann che bbogl fa ij"
             self.timeOut()
 
         self.stato = self.stato.generaSuccessore(azione)

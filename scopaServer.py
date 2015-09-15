@@ -36,7 +36,6 @@ class ClientManager(threading.Thread):
         """
         Imposta la difficoltà della partita
         """
-        print difficolta
         self.agente = agent.ScopaAgent(difficolta)
 
     def run(self):
